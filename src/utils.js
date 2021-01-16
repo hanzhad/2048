@@ -1,12 +1,11 @@
 import * as _ from "lodash";
-import {gameSize} from "./config";
+import defaultConfig, {gameSize} from "./config";
 
 let id = 0;
 
 function getId() {
     return id += 1;
 }
-
 
 export const getCellColor = (value) => {
     switch (value) {
@@ -32,6 +31,20 @@ export const getCellColor = (value) => {
             return 'rgb(237, 197, 63)'
         case 2048:
             return 'rgb(237, 194, 46)'
+        case 4096:
+            return 'rgb(71,128,233)'
+        case 8192:
+            return 'rgb(10,73,195)'
+        case 16384:
+            return 'rgb(76,100,150)'
+        case 32768:
+            return 'rgb(165,193,153)'
+        case 65536:
+            return 'rgb(86,202,81)'
+        case 131072:
+            return 'rgb(74,160,55)'
+        default:
+            return 'rgb(37,159,11)'
     }
 }
 
@@ -122,7 +135,7 @@ export const createCell = (list) => {
             return 2;
         }
 
-        return _.random() === 0 ? 2 : 4;
+        return _.random() === 0 ? 2048 : 4096;
     }
 
     return ({
@@ -281,4 +294,13 @@ const moveFunctions = {
         cellListByDirectionProcessor: (y, cellList) => _.chain([...cellList]).filter(['y', y]).sortBy(['x']).reverse().value(),
         calcNextCell: (cell) => ({...cell, x: cell.x - 1 < 0 ? cell.x : cell.x - 1}),
     },
+}
+
+export const getFiledSize = (config) => {
+    const {cellSize, gameSize, marginBetweenCell} = {
+        ...defaultConfig,
+        ...config,
+    };
+
+    return cellSize * gameSize + (marginBetweenCell * 2 * gameSize);
 }

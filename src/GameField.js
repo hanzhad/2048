@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import React, {useRef} from "react";
-import {getCellColor} from "./utils";
+import {getCellColor, getFiledSize} from "./utils";
 import defaultConfig from './config';
 
 function GameField({cellList, config = {}}) {
@@ -17,8 +17,8 @@ function GameField({cellList, config = {}}) {
                 position: 'relative',
                 backgroundColor: 'rgba(185, 173, 162)',
                 padding: gameFieldPadding,
-                width: cellSize * gameSize + (marginBetweenCell * 2 * gameSize),
-                height: cellSize * gameSize + (marginBetweenCell * 2 * gameSize),
+                width: getFiledSize({cellSize, gameSize, marginBetweenCell}),
+                height: getFiledSize({cellSize, gameSize, marginBetweenCell}),
                 display: 'flex',
                 flexWrap: 'wrap',
                 borderRadius: 5,
