@@ -135,7 +135,7 @@ export const createCell = (list) => {
             return 2;
         }
 
-        return _.random() === 0 ? 2048 : 4096;
+        return _.random() === 0 ? 2 : 4;
     }
 
     return ({
