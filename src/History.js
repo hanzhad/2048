@@ -1,66 +1,94 @@
 import * as _ from "lodash";
 import GameField from "./GameField";
-import React, {useEffect, useRef} from "react";
+import React, {forwardRef, useEffect, useMemo, useRef, useState} from "react";
 import {gameFieldPadding, toolbarHeight} from "./config";
 import {getFiledSize} from "./utils";
+import {FixedSizeGrid as Grid} from "react-window";
 
 function History({prevMoves}) {
-    const targetRef = useRef(null);
     const blockRef = useRef(null);
+    const [fieldHeight, setFieldHeight] = useState(0);
+
+    const fieldSize = useMemo(() => getFiledSize({cellSize: 20}) + (gameFieldPadding * 2), []);
 
     useEffect(
         () => {
-            blockRef?.current?.scrollTo(0, targetRef?.current?.offsetTop);
+            setFieldHeight(blockRef?.current?.clientHeight)
+            window.addEventListener('resize', () => {
+                setFieldHeight(blockRef?.current?.clientHeight)
+            });
         },
-        [prevMoves]
+        []
     );
-
 
     return (
         <div
-            ref={blockRef}
             style={{
-                position: 'relative',
-                marginTop: toolbarHeight,
                 width: getFiledSize({cellSize: 20}) + (gameFieldPadding * 2),
-                maxHeight: `calc(100vh - ${toolbarHeight}px)`,
-                overflowY: 'auto',
                 backgroundColor: 'rgba(185, 173, 162)',
-                flexDirection: 'flex-end'
-            }}>
-            <div style={{height: '3rem'}}/>
+            }}
+        >
             <div
                 style={{
-                    zIndex: 3,
-                    textAlign: "center",
-                    position: 'fixed',
-                    backgroundColor: 'rgba(185, 173, 162)',
-                    width: getFiledSize({cellSize: 20}) + (gameFieldPadding * 2),
-                    top: toolbarHeight,
-                    right: 0,
-                    height: '3rem',
+                    height: 50,
+                    fontSize: '1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                 }}
             >
-                <p>History</p>
+                <span>History</span>
             </div>
-            {
-                _.map(
-                    prevMoves,
-                    (move) => (
-                        <div
-                            key={JSON.stringify(move)}
-                        >
-                            <GameField
-                                cellList={move}
-                                config={{
-                                    cellSize: 20,
-                                }}/>
-                        </div>
-                    ))
-            }
-            <div ref={targetRef}/>
+
+            <div
+                ref={blockRef}
+                style={{
+                    minHeight: `calc(100vh - ${toolbarHeight}px - 3rem)`,
+                    maxHeight: `calc(100vh - ${toolbarHeight}px - 3rem)`,
+                }}
+            >
+                <Grid
+                    className="Grid"
+                    columnCount={1}
+                    columnWidth={fieldSize}
+                    height={fieldHeight}
+                    innerElementType={innerElementType}
+                    rowCount={_.size(prevMoves)}
+                    rowHeight={fieldSize}
+                    width={fieldSize}
+                    itemData={{
+                        prevMoves,
+                    }}
+                >
+                    {Cell}
+                </Grid>
+            </div>
         </div>
     );
 }
 
 export default History;
+
+const Cell = ({rowIndex, style, data}) => (
+    <div
+        style={style}
+    >
+        <GameField
+            cellList={_.get(data, `prevMoves.${rowIndex}`)}
+            config={{cellSize: 20}}/>
+    </div>
+);
+
+const innerElementType = forwardRef(({style, ...rest}, ref) => {
+    const targetRef = useRef(null);
+
+    return (
+        <>
+            <div ref={targetRef}/>
+            <div
+                ref={ref}
+                {...rest}
+            />
+        </>
+    )
+});

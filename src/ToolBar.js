@@ -6,11 +6,7 @@ function ToolBar({goBack}) {
         <div
             style={{
                 width: '100%',
-                position: 'fixed',
                 height: toolbarHeight,
-                top: 0,
-                left: 0,
-                zIndex: 2,
                 backgroundColor: 'rgba(185, 173, 162)',
                 display: 'flex',
                 alignItems: 'center',

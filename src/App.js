@@ -4,6 +4,7 @@ import GameField from "./GameField";
 import ToolBar from "./ToolBar";
 import History from "./History";
 import {createCell, onKeyPressHandler} from "./utils";
+import {toolbarHeight} from "./config";
 
 function App() {
     const [prevMoves, setPrevMoves] = useState([]);
@@ -26,8 +27,8 @@ function App() {
     const goBack = useCallback(
         () => {
             if (_.size(prevMoves) > 0) {
-                const prevCellList = _.last(prevMoves);
-                const newPrevMoves = _.take(prevMoves, _.size(prevMoves) - 1);
+                const prevCellList = _.first(prevMoves);
+                const newPrevMoves = _.takeRight(prevMoves, _.size(prevMoves) - 1);
 
                 setPrevMoves([...newPrevMoves]);
                 setCellList([...prevCellList]);
@@ -46,7 +47,7 @@ function App() {
                 <div
                     className="App"
                     style={{
-                        height: '100vh',
+                        height: `calc(100vh - ${toolbarHeight}px)`,
                         flex: 1,
                         display: 'flex',
                         alignItems: 'center',

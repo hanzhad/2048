@@ -109,7 +109,7 @@ export const onKeyPressHandler = (cellList, setCellList, prevMoves, setPrevMoves
         return;
     }
 
-    setPrevMoves([...prevMoves, cellList]);
+    setPrevMoves([cellList, ...prevMoves]);
     setCellList([...newList, createCell(newList)]);
 };
 
