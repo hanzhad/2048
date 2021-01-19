@@ -1,6 +1,13 @@
 import * as _ from "lodash";
 import defaultConfig, {gameSize} from "./config";
 
+const directions = {
+    TOP: 'TOP',
+    BOTTOM: 'BOTTOM',
+    LEFT: 'LEFT',
+    RIGHT: 'RIGHT',
+};
+
 let id = 0;
 
 function getId() {
@@ -53,35 +60,35 @@ export const onKeyPressHandler = (cellList, setCellList, prevMoves, setPrevMoves
 
     switch (key) {
         case 'w': {
-            direction = 'top';
+            direction = directions.TOP;
             break;
         }
         case 'ц': {
-            direction = 'top';
+            direction = directions.TOP;
             break;
         }
         case 's': {
-            direction = 'bottom';
+            direction = directions.BOTTOM;
             break;
         }
         case 'ы': {
-            direction = 'bottom';
+            direction = directions.BOTTOM;
             break;
         }
         case 'a': {
-            direction = 'left';
+            direction = directions.LEFT;
             break;
         }
         case 'ф': {
-            direction = 'left';
+            direction = directions.LEFT;
             break;
         }
         case 'd': {
-            direction = 'right';
+            direction = directions.RIGHT;
             break;
         }
         case 'в': {
-            direction = 'right';
+            direction = directions.RIGHT;
             break;
         }
         default: {
@@ -93,24 +100,26 @@ export const onKeyPressHandler = (cellList, setCellList, prevMoves, setPrevMoves
         return setCellList([...cellList]);
     }
 
-    const cellListByDirection = getCellListByDirection(direction, cellList);
+    const newList = processMove(direction, cellList);
 
-    const newList = processMove(direction, cellListByDirection);
+    const isSameField = _.difference(newList, cellList)?.length === 0 && _.difference(cellList, newList)?.length === 0;
 
-    if (
-        _.difference(newList, cellList)?.length === 0 &&
-        _.difference(cellList, newList)?.length === 0
-    ) {
-        return setCellList(newList);
-    }
-
-    if (_.size(newList) === gameSize ** 2) {
-        alert('gg wp!')
+    if (!isSameField) {
+        setPrevMoves([cellList, ...prevMoves]);
+        setCellList([...newList, createCell(newList)]);
         return;
     }
 
-    setPrevMoves([cellList, ...prevMoves]);
-    setCellList([...newList, createCell(newList)]);
+    if (_.size(newList) !== gameSize ** 2) {
+        return setCellList([...newList]);
+    }
+
+
+    if (getIsGameEnd(cellList) === true) {
+        alert('gg wp!');
+    }
+
+    return setCellList([...newList]);
 };
 
 export const createCell = (list) => {
@@ -153,9 +162,11 @@ const checkIsExistsCoordinates = (list, coordinates) => _
     .value();
 
 const processMove = (direction, cellList) => {
+    const cellListByDirection = getCellListByDirection(direction, cellList);
+
     let newList = [];
 
-    _.each(cellList, (list) => {
+    _.each(cellListByDirection, (list) => {
         let cellArray = [...list];
 
         let canBeSummed = canSum(cellArray);
@@ -261,8 +272,7 @@ const getCellListByDirection = (direction, cellList) => {
 };
 
 const moveFunctions = {
-    /*  TOP */
-    top: {
+    [directions.TOP]: {
         getDefaultCell: (cell) => ({...cell, y: 0}),
         cellListByDirectionProcessor: (x, cellList) => _.chain([...cellList]).filter(['x', x]).sortBy(['y']).value(),
         calcNextCell: (cell) => ({
@@ -270,8 +280,7 @@ const moveFunctions = {
             y: cell.y + 1 > gameSize ? cell.y : cell.y + 1,
         }),
     },
-    /*  BOTTOM */
-    bottom: {
+    [directions.BOTTOM]: {
         getDefaultCell: (cell) => ({...cell, y: gameSize - 1}),
         cellListByDirectionProcessor: (x, cellList) => _.chain([...cellList]).filter(['x', x]).sortBy(['y']).reverse().value(),
         calcNextCell: (cell) => ({
@@ -279,8 +288,7 @@ const moveFunctions = {
             y: cell.y - 1 < 0 ? cell.y : cell.y - 1,
         }),
     },
-    /*  LEFT */
-    left: {
+    [directions.LEFT]: {
         getDefaultCell: (cell) => ({...cell, x: 0}),
         cellListByDirectionProcessor: (y, cellList) => _.chain([...cellList]).filter(['y', y]).sortBy(['x']).value(),
         calcNextCell: (cell) => ({
@@ -288,8 +296,7 @@ const moveFunctions = {
             x: cell.x + 1 > gameSize ? cell.x : cell.x + 1,
         }),
     },
-    /*  RIGHT */
-    right: {
+    [directions.RIGHT]: {
         getDefaultCell: (cell) => ({...cell, x: gameSize - 1}),
         cellListByDirectionProcessor: (y, cellList) => _.chain([...cellList]).filter(['y', y]).sortBy(['x']).reverse().value(),
         calcNextCell: (cell) => ({...cell, x: cell.x - 1 < 0 ? cell.x : cell.x - 1}),
@@ -303,4 +310,32 @@ export const getFiledSize = (config) => {
     };
 
     return cellSize * gameSize + (marginBetweenCell * 2 * gameSize);
+}
+
+const getIsGameEnd = (cellList = []) => {
+    let isGameEnd = true;
+
+    const moves = new Map(_.map(directions, (direction) => [direction, processMove(direction, cellList)]));
+
+    outLoop:
+        for (const [directionOut, moveOut] of moves) {
+            for (const [directionIn, moveIn] of moves) {
+                if (directionOut === directionIn) {
+                    continue;
+                }
+
+                if (_.difference(moveOut, moveIn)?.length !== 0) {
+                    isGameEnd = false;
+                    break outLoop;
+                }
+
+                if (_.difference(moveIn, moveOut)?.length !== 0) {
+                    isGameEnd = false;
+                    break outLoop;
+                }
+            }
+
+        }
+
+    return isGameEnd;
 }

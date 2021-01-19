@@ -30,6 +30,8 @@ function App() {
                 const prevCellList = _.first(prevMoves);
                 const newPrevMoves = _.takeRight(prevMoves, _.size(prevMoves) - 1);
 
+                window.removeEventListener('keypress', onKeyPressHandler(cellList, setCellList, prevMoves, setPrevMoves));
+
                 setPrevMoves([...newPrevMoves]);
                 setCellList([...prevCellList]);
             }
